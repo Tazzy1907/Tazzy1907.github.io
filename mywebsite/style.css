@@ -1,0 +1,24 @@
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+main {
+    position: absolute;
+    /* width: 100vw; */
+    color: white;
+    z-index: 99;
+    width: 100%;
+    margin: 0px auto;
+    padding: 120px 0px;
+
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+}
+
+/* Start at 2nd, span across 5. */
+/* grid-column: 2 / span 5; */
+
+/* Start at 2nd column, end at 8th. */
+/* grid-column: 2 / 8;  */

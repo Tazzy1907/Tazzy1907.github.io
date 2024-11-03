@@ -1,0 +1,11 @@
+Model Information:
+* title:	Nissan 240SX low poly Rig
+* source:	https://sketchfab.com/3d-models/nissan-240sx-low-poly-rig-97717916125940f99755688576dbec30
+* author:	Kodox_Magnum (https://sketchfab.com/Kodox_Magnum)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Nissan 240SX low poly Rig" (https://sketchfab.com/3d-models/nissan-240sx-low-poly-rig-97717916125940f99755688576dbec30) by Kodox_Magnum (https://sketchfab.com/Kodox_Magnum) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
