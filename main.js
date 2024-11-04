@@ -11,10 +11,13 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-const controls = new OrbitControls(camera, renderer.domElement);
+// const controls = new OrbitControls(camera, renderer.domElement);
 
+//Starting points for the camera with car position at origin.
+const [cameraX, cameraY, cameraZ] = [2.685605316591597, 1.717229248991908, -4.089879259948045];
 
-camera.position.set(10, 10, 10);
+camera.position.set(cameraX, cameraY, cameraZ);
+camera.lookAt(new THREE.Vector3(0, 0, 5));
 
 // const spaceTexture = new THREE.TextureLoader().load('space.jpg');
 // const geometry = new THREE.TetrahedronGeometry(10);
@@ -57,21 +60,27 @@ const pointHelper = new THREE.PointLightHelper(pointLight);
 pointLight.position.set(5, 5, 5);
 scene.add(pointLight, pointHelper);
 
-let loadedModel;
+// Load the car model in.
+let carModel;
+let [carX, carY, carZ] = Array(3).fill(0);
 const gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
-    loadedModel = gltfScene;
-
-    // gltfScene.scene.scale.set(100, 100, 100);
-    scene.add(gltfScene.scene);
+    carModel = gltfScene;
+    carModel.scene.position.set(carX, carY, carZ);
+    scene.add(carModel.scene);
 })
 
+// Move the car along in a straight line, and make the camera follow.
+function moveCar() {
+    carZ += 0.1;
+    carModel.scene.position.set(carX, carY, carZ);
+    camera.position.set(cameraX + carX, cameraY + carY, cameraZ +carZ);
+}
 
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-
-    controls.update()
+    moveCar()
 }
 animate()
 
