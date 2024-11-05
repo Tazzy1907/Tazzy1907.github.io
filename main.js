@@ -15,12 +15,12 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // Orbit Controls.
-const controls = new OrbitControls(camera, renderer.domElement);
+// const controls = new OrbitControls(camera, renderer.domElement);
 
 // Starting points for the camera with car position at origin.
 const [cameraX, cameraY, cameraZ] = [62.685605316591597, 1.717229248991908, -84.089879259948045];
 camera.position.set(cameraX, cameraY, cameraZ);
-camera.lookAt(new THREE.Vector3(0, 0, 5));
+camera.lookAt(new THREE.Vector3(0, 0, 550));
 
 // Adding the grid.
 const gridHelper = new THREE.GridHelper(200, 50);
@@ -62,10 +62,10 @@ let carModel;
 const gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
     carModel = gltfScene.scene;
-    // carModel.position.set(carX, carY, carZ);
     scene.add(carModel);
     carModel.matrixAutoUpdate = false;
     myCar.setRenderComponent(carModel, sync);
+
 })
 
 // TO DISPLAY THE PATH.
@@ -87,12 +87,33 @@ const time = new YUKA.Time();
 // Normal animate function to update the scene.
 function animate() {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
 
     const delta = time.update().getDelta();
     entityManager.update(delta);
 
-    controls.update();
+    // if (carModel) {
+    //     const carPosition = myCar.position; // Vector3
+    //     const carDirection = myCar.rotation;
+
+    //     const offsetDistance = 15;
+    //     const offsetHeight = 5;
+
+    //     const cameraOffset = new THREE.Vector3(
+    //         carPosition.x - Math.sin(carDirection.y) * offsetDistance,
+    //         carPosition.y + offsetHeight,
+    //         carPosition.z - Math.cos(carDirection.y) * offsetDistance
+    //     );
+
+    //     camera.position.copy(cameraOffset);
+    //     camera.lookAt(carPosition);
+
+    //     console.log(camera.position);
+    //     console.log(camera.rotation);
+    // }
+
+    renderer.render(scene, camera);
+
+
 }
 animate()
 
