@@ -18,7 +18,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const controls = new OrbitControls(camera, renderer.domElement);
 
 // Starting points for the camera with car position at origin.
-const [cameraX, cameraY, cameraZ] = [2.685605316591597, 1.717229248991908, -4.089879259948045];
+const [cameraX, cameraY, cameraZ] = [62.685605316591597, 1.717229248991908, -84.089879259948045];
 camera.position.set(cameraX, cameraY, cameraZ);
 camera.lookAt(new THREE.Vector3(0, 0, 5));
 
@@ -30,60 +30,45 @@ scene.add(gridHelper)
 const ambientLight = new THREE.AmbientLight(0xffffff, 10);
 scene.add(ambientLight);
 
-// Load the car model in.
-let carModel;
-let [carX, carY, carZ] = Array(3).fill(0);
-const gltfLoader = new GLTFLoader();
-gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
-    carModel = gltfScene;
-    carModel.scene.position.set(carX, carY, carZ);
-    scene.add(carModel.scene);
-})
+// YUKA VEHICLE AI.
+const myCar = new YUKA.Vehicle();
 
-// Move the car along in a straight line, and make the camera follow.
-// function moveCar() {
-//     carZ += 0.1;
-//     carModel.scene.position.set(carX, carY, carZ);
-//     camera.position.set(cameraX + carX, cameraY + carY, cameraZ +carZ);
-// }
+// Creating a path for our vehicle to follow.
+const carPath = new YUKA.Path();
+carPath.add(new YUKA.Vector3(60, 0, -80));
+carPath.add(new YUKA.Vector3(80, 0, 0));
+carPath.add(new YUKA.Vector3(60, 0, 80));
+carPath.add(new YUKA.Vector3(-60, 0, 80));
+carPath.add(new YUKA.Vector3(-80, 0, 0));
+carPath.add(new YUKA.Vector3(-60, 0, -80));
+carPath.loop = true;
 
+myCar.position.copy(carPath.current());
 
-// Adding in a vehicular path.
-const vehicleGeometry = new THREE.ConeGeometry(2, 5, 8);
-vehicleGeometry.rotateX(Math.PI * 0.5);
-const vehicleMaterial = new THREE.MeshNormalMaterial();
-const vehicleMesh = new THREE.Mesh(vehicleGeometry, vehicleMaterial);
-vehicleMesh.matrixAutoUpdate = false;
-scene.add(vehicleMesh);
-
-const vehicle = new YUKA.Vehicle();
-vehicle.setRenderComponent(vehicleMesh, sync);
+const followPathBehaviour = new YUKA.FollowPathBehavior(carPath, 8);
+myCar.steering.add(followPathBehaviour);
+const onPathBehaviour = new YUKA.OnPathBehavior(carPath);
+myCar.steering.add(onPathBehaviour);
+myCar.maxSpeed = 40;
+const entityManager = new YUKA.EntityManager();
+entityManager.add(myCar);
 
 function sync(entity, renderComponent){
     renderComponent.matrix.copy(entity.worldMatrix);
 }
 
-// Creating a path for our vehicle to follow.
-const carPath = new YUKA.Path();
-carPath.add(new YUKA.Vector3(60, 0, -80));
-carPath.add(new YUKA.Vector3(60, 0, 80));
-carPath.add(new YUKA.Vector3(-60, 0, 80));
-carPath.add(new YUKA.Vector3(-60, 0, -80));
-carPath.loop = true;
+// Load the car model in.
+let carModel;
+const gltfLoader = new GLTFLoader();
+gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
+    carModel = gltfScene.scene;
+    // carModel.position.set(carX, carY, carZ);
+    scene.add(carModel);
+    carModel.matrixAutoUpdate = false;
+    myCar.setRenderComponent(carModel, sync);
+})
 
-vehicle.position.copy(carPath.current());
-
-// Behaviours
-const followPathBehaviour = new YUKA.FollowPathBehavior(carPath, 5);
-vehicle.steering.add(followPathBehaviour);
-const onPathBehaviour = new YUKA.OnPathBehavior(carPath);
-vehicle.steering.add(onPathBehaviour);
-
-vehicle.maxSpeed = 20;
-
-const entityManager = new YUKA.EntityManager();
-entityManager.add(vehicle);
-
+// TO DISPLAY THE PATH.
 // Get all coordinate positions and store them in a list.
 const position = [];
 for(let i = 0; i < carPath._waypoints.length;i++) {
@@ -103,7 +88,6 @@ const time = new YUKA.Time();
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-    // moveCar()
 
     const delta = time.update().getDelta();
     entityManager.update(delta);
