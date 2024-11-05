@@ -22,6 +22,13 @@ const [cameraX, cameraY, cameraZ] = [62.685605316591597, 1.717229248991908, -84.
 camera.position.set(cameraX, cameraY, cameraZ);
 camera.lookAt(new THREE.Vector3(0, 0, 550));
 
+// Adding a camera rig.
+const cameraRig = new THREE.Object3D();
+scene.add(cameraRig);
+
+camera.position.set(6, 3, -6);
+cameraRig.add(camera);
+
 // Adding the grid.
 const gridHelper = new THREE.GridHelper(200, 50);
 scene.add(gridHelper)
@@ -84,6 +91,18 @@ scene.add(lines);
 
 const time = new YUKA.Time();
 
+function moveCamera() {
+    if (carModel) {
+        cameraRig.position.copy(myCar.position);
+
+        cameraRig.lookAt(
+            myCar.position.x + Math.sin(myCar.rotation.y),
+            myCar.position.y,
+            myCar.position.z + Math.cos(myCar.rotation.y)
+        );
+    }
+}
+
 // Normal animate function to update the scene.
 function animate() {
     requestAnimationFrame(animate);
@@ -91,29 +110,9 @@ function animate() {
     const delta = time.update().getDelta();
     entityManager.update(delta);
 
-    // if (carModel) {
-    //     const carPosition = myCar.position; // Vector3
-    //     const carDirection = myCar.rotation;
-
-    //     const offsetDistance = 15;
-    //     const offsetHeight = 5;
-
-    //     const cameraOffset = new THREE.Vector3(
-    //         carPosition.x - Math.sin(carDirection.y) * offsetDistance,
-    //         carPosition.y + offsetHeight,
-    //         carPosition.z - Math.cos(carDirection.y) * offsetDistance
-    //     );
-
-    //     camera.position.copy(cameraOffset);
-    //     camera.lookAt(carPosition);
-
-    //     console.log(camera.position);
-    //     console.log(camera.rotation);
-    // }
+    moveCamera();
 
     renderer.render(scene, camera);
-
-
 }
 animate()
 
