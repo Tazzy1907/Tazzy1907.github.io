@@ -1,6 +1,6 @@
 import './style.css'
 import * as THREE from 'unpkg.com/three';
-import * as YUKA from 'unpkg.com/yuka';
+import * as YUKA from 'yuka';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
