@@ -1,9 +1,18 @@
 import './style.css'
 import * as THREE from 'three';
 import * as YUKA from 'yuka';
+// Map controls for debugging / development
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MapControls } from 'three/addons/controls/MapControls.js';
+
+// Useful things.
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+
 
 // BASIC SETUP
 const scene = new THREE.Scene();
@@ -14,6 +23,20 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+
+// Set up renderer and composer
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+// Add bloom pass with adjustable strength, radius, and threshold
+const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5, // strength of the bloom
+    0.4, // radius of the bloom
+    0.85 // threshold for what starts blooming
+);
+composer.addPass(bloomPass);
+
 
 // Orbit Controls.
 // const controls = new OrbitControls(camera, renderer.domElement);
@@ -46,6 +69,9 @@ const directionalHelper = new THREE.DirectionalLightHelper(directionalLight);
 scene.add(directionalHelper);
 directionalLight.position.set(10, 10, -10).normalize;
 
+// Loading the space texture.
+const spaceTexture = new THREE.TextureLoader().load('./assets/space2.png');
+scene.background = spaceTexture;
 
 // ------------------------------------------------------------------------------
 
@@ -57,32 +83,34 @@ function sync(entity, renderComponent){
 }
 // Creating a path for our vehicle to follow.
 const carPath = new YUKA.Path(); // 3.25 scale from Blender
-carPath.add(new YUKA.Vector3(105, 0, -80));
-carPath.add(new YUKA.Vector3(105, 0, -20));
-carPath.add(new YUKA.Vector3(200, 0, 75));
-carPath.add(new YUKA.Vector3(185, 0, 90));
-carPath.add(new YUKA.Vector3(190, 0, 130));
-carPath.add(new YUKA.Vector3(165, 0, 185));
-carPath.add(new YUKA.Vector3(120, 0, 225));
-carPath.add(new YUKA.Vector3(110, 0, 235));
-carPath.add(new YUKA.Vector3(45, 0, 235));
-carPath.add(new YUKA.Vector3(45, 0, 190));
-carPath.add(new YUKA.Vector3(120, 0, 120));
-carPath.add(new YUKA.Vector3(95, 0, 85));
-carPath.add(new YUKA.Vector3(45, 0, 120));
-carPath.add(new YUKA.Vector3(45, 0, 55));
-carPath.add(new YUKA.Vector3(100, 0, 0));
-carPath.add(new YUKA.Vector3(100, 0, -15));
-carPath.add(new YUKA.Vector3(90, 0, -25));
-carPath.add(new YUKA.Vector3(90, 0, -80));
-carPath.add(new YUKA.Vector3(75, 0, -90));
-carPath.add(new YUKA.Vector3(-50, 0, -90));
-carPath.add(new YUKA.Vector3(-50, 0, -105));
-carPath.add(new YUKA.Vector3(75, 0, -105));
+function createPath() {
+    carPath.add(new YUKA.Vector3(105, 0, -80));
+    carPath.add(new YUKA.Vector3(105, 0, -20));
+    carPath.add(new YUKA.Vector3(200, 0, 75));
+    carPath.add(new YUKA.Vector3(185, 0, 90));
+    carPath.add(new YUKA.Vector3(190, 0, 130));
+    carPath.add(new YUKA.Vector3(165, 0, 185));
+    carPath.add(new YUKA.Vector3(120, 0, 225));
+    carPath.add(new YUKA.Vector3(110, 0, 235));
+    carPath.add(new YUKA.Vector3(45, 0, 235));
+    carPath.add(new YUKA.Vector3(45, 0, 190));
+    carPath.add(new YUKA.Vector3(120, 0, 120));
+    carPath.add(new YUKA.Vector3(95, 0, 85));
+    carPath.add(new YUKA.Vector3(45, 0, 120));
+    carPath.add(new YUKA.Vector3(45, 0, 55));
+    carPath.add(new YUKA.Vector3(100, 0, 0));
+    carPath.add(new YUKA.Vector3(100, 0, -15));
+    carPath.add(new YUKA.Vector3(90, 0, -25));
+    carPath.add(new YUKA.Vector3(90, 0, -80));
+    carPath.add(new YUKA.Vector3(75, 0, -90));
+    carPath.add(new YUKA.Vector3(-50, 0, -90));
+    carPath.add(new YUKA.Vector3(-50, 0, -105));
+    carPath.add(new YUKA.Vector3(75, 0, -105));
+    carPath.loop = true;
+    myCar.position.copy(carPath.current());
+}
+createPath();
 
-
-carPath.loop = true;
-myCar.position.copy(carPath.current());
 // Behaviour for car agent.
 const followPathBehaviour = new YUKA.FollowPathBehavior(carPath, 5);
 myCar.steering.add(followPathBehaviour);
@@ -117,14 +145,39 @@ gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => 
     carModel.matrixAutoUpdate = false;
     myCar.scale = new YUKA.Vector3(1.3, 1.3, 1.3);
     myCar.setRenderComponent(carModel, sync);
+
+    carModel.traverse((child) => {
+        if (child.isMesh) {
+            // Change the brake lights to glow red.
+            if (child.material.name.includes('kaca_bening')) {
+                child.material.emissive = new THREE.Color(0xff0000);
+                child.material.emissiveIntensity = 6;
+            }
+            // Change the front lights to glow purple.
+            if (child.material.name.includes('lampu_depan')) {
+                console.log("Found!");
+                child.material.emissive = new THREE.Color(0xa020f0);
+                child.material.emissiveIntensity = 10;
+            }
+        }
+    });
 });
 
 let cityModel;
-gltfLoader.load('./assets/cyberpunk_city_-_1/scene.gltf', (gltfScene) => {
+gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
     cityModel = gltfScene.scene;
     scene.add(cityModel);
     cityModel.scale.setScalar(70);
     cityModel.position.y -= 4.5;
+
+    cityModel.traverse((child) => {
+        if (child.isMesh) {
+            // Make the tarmac a darker grey.
+            if (child.material.name.includes('Meshpart3Mtl')) {
+                child.material.color.setHex(0x6f6f6e); 
+            }
+        }
+    });
 });
 
 // ------------------------------------------------------------------------------
@@ -154,7 +207,8 @@ function animate() {
 
     moveCamera();
 
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+    composer.render();
     // console.log("x: ", camera.position.x, " y: ", camera.position.z);
 
     // controls.update();
