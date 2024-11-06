@@ -1,6 +1,7 @@
 import './style.css'
 import * as THREE from 'three';
 import * as YUKA from 'yuka';
+
 // Map controls for debugging / development
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { MapControls } from 'three/addons/controls/MapControls.js';
@@ -8,13 +9,16 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 // Useful things.
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 
+// For bloom and visual effects.
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 
-
+// ------------------------------------------------------------------------------
 // BASIC SETUP
+// ------------------------------------------------------------------------------
+
 const scene = new THREE.Scene();
 // (FOV, AspectRatio, View Frustrum) 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -24,11 +28,9 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-// Set up renderer and composer
+// Adding BLOOM and glowing effects.
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-
-// Add bloom pass with adjustable strength, radius, and threshold
 const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
     1.5, // strength of the bloom
@@ -41,10 +43,13 @@ composer.addPass(bloomPass);
 // Orbit Controls.
 // const controls = new OrbitControls(camera, renderer.domElement);
 
-camera.position.set( 0, 100, 0);
-
+// Map Controls.
 // const controls = new MapControls(camera, renderer.domElement);
 // controls.enableDamping = true;
+
+// Adding the grid.
+// const gridHelper = new THREE.GridHelper(1000, 250);
+// scene.add(gridHelper)
 
 // Starting points for the camera with car position at origin.
 const [cameraX, cameraY, cameraZ] = [62.685605316591597, 1.717229248991908, -84.089879259948045];
@@ -54,13 +59,9 @@ camera.lookAt(new THREE.Vector3(0, -5, 200));
 // Adding a camera rig to follow the vehicle.
 const cameraRig = new THREE.Object3D();
 scene.add(cameraRig);
-
 camera.position.set(6, 3, -6);
 cameraRig.add(camera);
 
-// Adding the grid.
-// const gridHelper = new THREE.GridHelper(1000, 250);
-// scene.add(gridHelper)
 
 // Directional Light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -71,11 +72,72 @@ directionalLight.position.set(10, 10, -10).normalize;
 
 // Loading the space texture.
 const spaceTexture = new THREE.TextureLoader().load('./assets/space2.png');
-scene.background = spaceTexture;
+// scene.background = spaceTexture;
 
 // ------------------------------------------------------------------------------
+// LOADING IN MODELS
+// ------------------------------------------------------------------------------
 
+// Load the car model in.
+let carModel;
+const gltfLoader = new GLTFLoader();
+gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
+    carModel = gltfScene.scene;
+    scene.add(carModel);
+    carModel.matrixAutoUpdate = false;
+    myCar.scale = new YUKA.Vector3(1.3, 1.3, 1.3);
+    myCar.setRenderComponent(carModel, sync);
+
+    carModel.traverse((child) => {
+        if (child.isMesh) {
+            // Change the brake lights to glow red.
+            if (child.material.name.includes('kaca_bening')) {
+                child.material.emissive = new THREE.Color(0xff0000);
+                child.material.emissiveIntensity = 6;
+            }
+            // Change the front lights to glow purple.
+            if (child.material.name.includes('lampu_depan')) {
+                child.material.emissive = new THREE.Color(0xa020f0);
+                child.material.emissiveIntensity = 10;
+            }
+        }
+    });
+});
+
+// Loading in the city model.
+let cityModel;
+gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
+    cityModel = gltfScene.scene;
+    scene.add(cityModel);
+    cityModel.scale.setScalar(70);
+    cityModel.position.y -= 4.5;
+
+    cityModel.traverse((child) => {
+        if (child.isMesh) {
+            // Make the tarmac a darker grey.
+            if (child.material.name.includes('Meshpart3Mtl')) {
+                child.material.color.setHex(0x6f6f6e); 
+            }
+        }
+    });
+});
+
+// For the sky, may need replacing with a SkyBox.
+const sphereGeo = new THREE.SphereGeometry(900, 64, 32);
+const sphereMaterial = new THREE.MeshBasicMaterial( {
+    map: new THREE.TextureLoader().load(
+        './assets/space.png'
+    )
+});
+const skySphere = new THREE.Mesh(sphereGeo, sphereMaterial);
+skySphere.material.side = THREE.BackSide;
+scene.add(skySphere);
+
+
+// ------------------------------------------------------------------------------
 // YUKA VEHICLE AI.
+// ------------------------------------------------------------------------------
+
 const myCar = new YUKA.Vehicle();
 // Sync function for Yuka
 function sync(entity, renderComponent){
@@ -135,56 +197,11 @@ entityManager.add(myCar);
 // scene.add(lines);
 
 // ------------------------------------------------------------------------------
-
-// Load the car model in.
-let carModel;
-const gltfLoader = new GLTFLoader();
-gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => {
-    carModel = gltfScene.scene;
-    scene.add(carModel);
-    carModel.matrixAutoUpdate = false;
-    myCar.scale = new YUKA.Vector3(1.3, 1.3, 1.3);
-    myCar.setRenderComponent(carModel, sync);
-
-    carModel.traverse((child) => {
-        if (child.isMesh) {
-            // Change the brake lights to glow red.
-            if (child.material.name.includes('kaca_bening')) {
-                child.material.emissive = new THREE.Color(0xff0000);
-                child.material.emissiveIntensity = 6;
-            }
-            // Change the front lights to glow purple.
-            if (child.material.name.includes('lampu_depan')) {
-                console.log("Found!");
-                child.material.emissive = new THREE.Color(0xa020f0);
-                child.material.emissiveIntensity = 10;
-            }
-        }
-    });
-});
-
-let cityModel;
-gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
-    cityModel = gltfScene.scene;
-    scene.add(cityModel);
-    cityModel.scale.setScalar(70);
-    cityModel.position.y -= 4.5;
-
-    cityModel.traverse((child) => {
-        if (child.isMesh) {
-            // Make the tarmac a darker grey.
-            if (child.material.name.includes('Meshpart3Mtl')) {
-                child.material.color.setHex(0x6f6f6e); 
-            }
-        }
-    });
-});
-
+// EXTRA FUNCTIONS
 // ------------------------------------------------------------------------------
 
-
 const time = new YUKA.Time();
-
+// Function for camera to follow car.
 function moveCamera() {
     // Checks the car model is loaded first.
     if (carModel) {
@@ -198,6 +215,9 @@ function moveCamera() {
     }
 }
 
+// ------------------------------------------------------------------------------
+// REGULAR FUNCTIONS.
+// ------------------------------------------------------------------------------
 // Normal animate function to update the scene.
 function animate() {
     requestAnimationFrame(animate);
@@ -214,6 +234,8 @@ function animate() {
     // controls.update();
 }
 animate()
+
+// ------------------------------------------------------------------------------
 
 
 
