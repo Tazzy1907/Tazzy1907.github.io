@@ -3,15 +3,79 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Iceland&family=Kanit&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Taz's Website</title>
   </head>
   <body>
     <canvas id="bg"></canvas>   
     <main>
-      <div id="welcome">
-        TAZ'S PORTFOLIO
+      <nav id="navbar">
+        <a href=""> Home </a>
+        <a href=""> Education </a>
+        <a href=""> Experience </a>
+        <a href=""> Projects </a>
+        <a href=""> Links </a>
+      </nav>
+
+      <div id="container">
+        <div class="content" id="home">
+          <div class="content-panel">
+            <h1>Tanaz Siriwardena</h1>
+            <p>Enthusiastic Computer Science undergraduate with a passion for full stack development specialising in Java and Python. Eager to apply my skills in real-world projects through software engineering internships. Proven ability to collaborate in team settings and lead through senior management experience.
+            </p>
+          </div>
+
+          <div class="content-panel" id="education">
+            <h1>Education</h1>
+            <p><span style="font-weight: bold; font-size:larger;">The Royal Grammar School, High Wycombe</span><br>
+            <ul style="margin-top: -30px;">
+              <li>A Levels in Maths, Further Maths, Physics, Computing</li>
+              <li>A*A*AA</li></p>
+            </ul>
+
+            <p><span style="font-weight: bold; font-size:larger;">University of Warwick - BSc Computer Science</span><br>
+            <ul style="margin-top: -30px;">
+              <li>Artificial Intelligence</li>
+              <li>Operating Systems & Computer Networks</li>
+              <li>Database Systems</li>
+              <li>Web Development</li>
+            </ul></p>
+          </div>
+
+          <div class="content-panel" id="experience">
+            <h1>Experience</h1>
+            <p><span style="font-weight: bold; font-size:larger;">Sixth Form Computing Ambassador - RGSHW</span><br>
+            Ran coding workshops, tutored younger years, represented subject to peers and prospective students.
+            </p>
+            <p><span style="font-weight: bold; font-size:larger;">Holding Assistant Manager - Merletto Lounge</span><br>
+            Managed teams of up to 6 per shift, conducting Staff training and audits to ensure high quality of customer-focused service.
+            </p>
+          </div>
+
+          <div class="content-panel" id="projects">
+            <h1>Projects</h1>
+              <p>Three.js Portfolio Website - <a href="https://github.com/Tazzy1907/Tazzy1907.github.io">GitHub</a> - <a href="">Link</a><br>
+              Web App Event Management System - <a href="https://github.com/Tazzy1907/CS139-Coursework-EventByte">GitHub</a><br>
+              C Robot Arm For Towers of Hanoi - <a href="https://github.com/Tazzy1907/CS132-Robot-Arm">GitHub</a><br>
+              C++ 3D Object Renderer - <a href="https://github.com/Tazzy1907/QTGraphicsImplementation">GitHub</a><br>
+              </p>
+          </div>
+
+          <div class="content-panel" id="links">
+            <h1>Links</h1>
+            <p>Feel free to contact me on any of the below platforms!<br>
+            Email: <a href="">tanlinsir@gmail.com</a><br>
+            Instagram: <a href="https://www.instagram.com/taz.siri/">@taz.siri</a><br>
+            LinkedIn: <a href="https://www.linkedin.com/in/tanaz-siriwardena-bb4753237/">Tanaz Siriwardena</a><br>
+            GitHub: <a href="https://github.com/Tazzy1907">@Tazzy1907</a>
+            </p>
+          </div>
+        </div>
       </div>
+    
     </main>
     
     <script type="module" src="/main.js"></script>

@@ -2,42 +2,78 @@ canvas {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1;
+    z-index: -1;
     display: inline;
 }
 
 main {
-    position: absolute;
-    /* width: 100vw; */
-    color: white;
-    z-index: 99;
-    width: 100%;
-    margin: 0px auto;
-    padding: 120px 0px;
-    /* display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 18vh */
+    font-family: "Iceland", sans-serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
-#welcome {
-    position: absolute;
-    flex: auto;
-    background-color: red;
-    z-index: 2; /* Ensures it appears above the canvas */
-    /* top: 20%;
-    left: 25%; */
-    grid-column: 2 / span 5;
-    grid-row: 2 / span 5;
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    font-size: 24px;
+nav {
+    z-index: 10;
+    border-radius: 15px;
+    position: fixed;
+    left: 15%;
+    width: 70%;
     text-align: center;
-  }
+    padding: 5px;
+    margin: 0;
+    font-size: 60px;
+    border: solid white 2px;
+    background:rgba(0, 0, 0, 0.8);
+}
 
-/* Start at 2nd, span across 5. */
-/* grid-column: 2 / span 5; */
+nav a {
+    margin-right: 10px;
+    margin-left: 10px;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
 
-/* Start at 2nd column, end at 8th. */
-/* grid-column: 2 / 8;  */
+nav a:hover {
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), /* Outer glow */
+                 0 0 20px rgba(255, 255, 255, 0.6), 
+                 0 0 30px rgba(255, 255, 255, 0.4); /* Adjust colors as needed */
+}
+
+#container {
+    padding-left: 3em;
+    display: flex;
+    justify-content: left;
+    flex-wrap: wrap;
+    padding-top: 10em;
+}
+
+.content-panel {
+    text-align: center;
+    border: solid white 2px;
+    max-width: 40%;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    color: white;
+    font-size: 30px;
+    margin-bottom: 15em;
+    transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.content-panel:hover {
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), /* Outer glow */
+                 0 0 20px rgba(255, 255, 255, 0.6), 
+                 0 0 30px rgba(255, 255, 255, 0.4); /* Adjust colors as needed */
+}
+
+.content-panel p:first-of-type {
+    margin-top: -30px;
+}
+
+#projects a, #links a {
+    color:rgba(0, 254, 255, 1)
+}
