@@ -8,6 +8,7 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 
 // Useful things.
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
+import gsap from 'gsap';
 
 // For bloom and visual effects.
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -214,6 +215,13 @@ function moveCamera() {
         );
     }
 }
+
+window.addEventListener('mousedown', function() {
+    gsap.to(camera, {
+        y: 30,
+        duration: 3
+    });
+})
 
 // ------------------------------------------------------------------------------
 // REGULAR FUNCTIONS.
