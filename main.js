@@ -22,7 +22,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 const scene = new THREE.Scene();
 // (FOV, AspectRatio, View Frustrum) 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
 })
@@ -45,8 +45,8 @@ composer.addPass(bloomPass);
 // const controls = new OrbitControls(camera, renderer.domElement);
 
 // Map Controls.
-// const controls = new MapControls(camera, renderer.domElement);
-// controls.enableDamping = true;
+// const mapControls = new MapControls(camera, renderer.domElement);
+// mapControls.enableDamping = true;
 
 // Adding the grid.
 // const gridHelper = new THREE.GridHelper(1000, 250);
@@ -183,6 +183,8 @@ myCar.maxSpeed = 15;
 const entityManager = new YUKA.EntityManager();
 entityManager.add(myCar);
 
+// FOR PATH DEBUGGING.
+
 // TO DISPLAY THE PATH.
 // Get all coordinate positions and store them in a list.
 // const position = [];
@@ -198,11 +200,19 @@ entityManager.add(myCar);
 // scene.add(lines);
 
 // ------------------------------------------------------------------------------
-// EXTRA FUNCTIONS
+// CAMERA BASED FUNCTIONS
 // ------------------------------------------------------------------------------
 
 const time = new YUKA.Time();
-// Function for camera to follow car.
+
+const cityCenter = new THREE.Vector3(93.75, 102.34, 94.36); // Center of the city
+const orbitRadius = 102.34; // Distance from the center
+const orbitHeight = 150; // Height above the center
+const orbit = {angle: 0}
+let orbitween = null;
+let carFollow = true; // So we stop following the car.
+
+// Function for the HOME tab animation. - Following the car.
 function moveCamera() {
     // Checks the car model is loaded first.
     if (carModel) {
@@ -216,12 +226,77 @@ function moveCamera() {
     }
 }
 
-window.addEventListener('mousedown', function() {
-    gsap.to(camera, {
-        y: 30,
-        duration: 3
-    });
-})
+// Function for the EDUCATION tab animation - Orbit the city.
+function orbitCamera() {
+    // Assign so we can track whether the animation is running.
+    orbitween = gsap.to(orbit, {
+        angle: Math.PI * 2,
+        duration: 30,
+        repeat: -1,
+        ease: "none",
+        onUpdate: function(self) {
+            camera.position.set(
+                cityCenter.x + orbitRadius * Math.cos(orbit.angle),
+                orbitHeight,
+                cityCenter.z + orbitRadius * Math.sin(orbit.angle)
+            );
+            camera.lookAt(cityCenter);
+        }
+    })
+}
+
+// Code for transitioning to the orbit camera.    
+function toEducationAnimation() {
+    carFollow = false;
+    orbit.angle = 0;
+
+    // Checks if there is an existing animation, and kills it before restarting this one.
+    if (orbitween) {
+        orbitween.kill();
+    }
+
+    // Get where the camera is currently looking.
+    const currentLookAt = new THREE.Vector3();
+    camera.getWorldDirection(currentLookAt);
+
+    gsap.timeline()
+        .to(currentLookAt, {
+            x: cityCenter.x,
+            y: cityCenter.y,
+            z: cityCenter.z,
+            duration: 4,
+            onUpdate: function() {
+                camera.lookAt(currentLookAt);
+            }
+        }, 0)
+
+        .to(camera.position, {
+            x: cityCenter.x + orbitRadius * Math.cos(0),
+            y: orbitHeight,
+            z: cityCenter.z + orbitRadius * Math.sin(0),
+            duration: 4,
+            ease: "power2.inOut",
+            onUpdate: function() {
+                // camera.lookAt(cityCenter);
+            },
+            onComplete: function() {
+                // Start the orbital motion after reaching the initial position
+                orbitCamera();
+            }
+        }, 0);
+}
+
+// window.addEventListener('mousedown', function() {
+//     console.log("Switching to EDUCATION tab animation.")
+//     toEducationAnimation();
+// });
+
+document.getElementById('educationNav').addEventListener('click', function(e) {
+    e.preventDefault();
+    console.log("Switching to EDUCATION tab animation.")
+    toEducationAnimation();
+});
+
 
 // ------------------------------------------------------------------------------
 // REGULAR FUNCTIONS.
@@ -233,13 +308,14 @@ function animate() {
     const delta = time.update().getDelta();
     entityManager.update(delta);
 
-    moveCamera();
+    if (carFollow) {
+        moveCamera();
+    };
 
-    // renderer.render(scene, camera);
+    // console.log(camera.position);
     composer.render();
-    // console.log("x: ", camera.position.x, " y: ", camera.position.z);
 
-    // controls.update();
+    // mapControls.update();
 }
 animate()
 
