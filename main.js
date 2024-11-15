@@ -121,6 +121,11 @@ gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
             }
         }
     });
+
+    // FOR FINDING THE CENTER OF THE CITY COORDINATES.
+    // const box = new THREE.Box3().setFromObject(cityModel);
+    // const center = box.getCenter(new THREE.Vector3());
+    // console.log('City Center:', center);
 });
 
 // For the sky, may need replacing with a SkyBox.
@@ -205,7 +210,7 @@ entityManager.add(myCar);
 
 const time = new YUKA.Time();
 
-const cityCenter = new THREE.Vector3(93.75, 102.34, 94.36); // Center of the city
+const cityCenter = new THREE.Vector3(119.17, 102.34, 94.36); // Center of the city
 const orbitRadius = 102.34; // Distance from the center
 const orbitHeight = 150; // Height above the center
 const orbit = {angle: 0}
@@ -286,11 +291,7 @@ function toEducationAnimation() {
         }, 0);
 }
 
-// window.addEventListener('mousedown', function() {
-//     console.log("Switching to EDUCATION tab animation.")
-//     toEducationAnimation();
-// });
-
+// Switch to the orbit when education nav button is pressed.
 document.getElementById('educationNav').addEventListener('click', function(e) {
     e.preventDefault();
     console.log("Switching to EDUCATION tab animation.")
