@@ -71,10 +71,6 @@ const directionalHelper = new THREE.DirectionalLightHelper(directionalLight);
 scene.add(directionalHelper);
 directionalLight.position.set(10, 10, -10).normalize;
 
-// Loading the space texture.
-const spaceTexture = new THREE.TextureLoader().load('./assets/space2.png');
-// scene.background = spaceTexture;
-
 // ------------------------------------------------------------------------------
 // LOADING IN MODELS
 // ------------------------------------------------------------------------------
@@ -129,11 +125,10 @@ gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
 });
 
 // For the sky, may need replacing with a SkyBox.
-const sphereGeo = new THREE.SphereGeometry(900, 64, 32);
+const sphereGeo = new THREE.SphereGeometry(500, 60, 40);
+const spaceTexture = new THREE.TextureLoader().load('./assets/spacePanorama-earth-4k.jpg');
 const sphereMaterial = new THREE.MeshBasicMaterial( {
-    map: new THREE.TextureLoader().load(
-        './assets/space.png'
-    )
+    map: spaceTexture
 });
 const skySphere = new THREE.Mesh(sphereGeo, sphereMaterial);
 skySphere.material.side = THREE.BackSide;
@@ -239,7 +234,7 @@ function orbitCamera() {
         duration: 30,
         repeat: -1,
         ease: "none",
-        onUpdate: function(self) {
+        onUpdate: function() {
             camera.position.set(
                 cityCenter.x + orbitRadius * Math.cos(orbit.angle),
                 orbitHeight,
@@ -297,6 +292,17 @@ document.getElementById('educationNav').addEventListener('click', function(e) {
     console.log("Switching to EDUCATION tab animation.")
     toEducationAnimation();
 });
+
+// Needs some work + a toHomeAnimation() function.
+// document.getElementById('homeNav').addEventListener('click', function(e) {
+//     e.preventDefault();
+//     console.log("Switching to HOME tab animation.")
+//     // toEducationAnimation();
+//     if (orbitween) {
+//         orbitween.kill();
+//     }
+//     carFollow = true;
+// });
 
 
 // ------------------------------------------------------------------------------
