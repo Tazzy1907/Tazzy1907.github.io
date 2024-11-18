@@ -6,6 +6,9 @@ import * as YUKA from 'yuka';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { MapControls } from 'three/addons/controls/MapControls.js';
 
+import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+
 // Useful things.
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import gsap from 'gsap';
@@ -40,9 +43,13 @@ const bloomPass = new UnrealBloomPass(
 );
 composer.addPass(bloomPass);
 
-
+let debugMode = false;
 // Orbit Controls.
-// const controls = new OrbitControls(camera, renderer.domElement);
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.dampingFactor = 0.05;
+orbitControls.enabled = false;
+orbitControls.target.set(0, 0, 0);
 
 // Map Controls.
 // const mapControls = new MapControls(camera, renderer.domElement);
@@ -74,6 +81,8 @@ directionalLight.position.set(10, 10, -10).normalize;
 // ------------------------------------------------------------------------------
 // LOADING IN MODELS
 // ------------------------------------------------------------------------------
+RectAreaLightUniformsLib.init();
+
 
 // Load the car model in.
 let carModel;
@@ -103,7 +112,8 @@ gltfLoader.load('./assets/nissan_240sx_low_poly_rig/scene.gltf', (gltfScene) => 
 
 // Loading in the city model.
 let cityModel;
-gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
+// gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
+gltfLoader.load('./assets/cityWithCarGarage.gltf', (gltfScene) => {
     cityModel = gltfScene.scene;
     scene.add(cityModel);
     cityModel.scale.setScalar(70);
@@ -118,11 +128,23 @@ gltfLoader.load('./assets/mycolouredcity/mycity.gltf', (gltfScene) => {
         }
     });
 
+
     // FOR FINDING THE CENTER OF THE CITY COORDINATES.
     // const box = new THREE.Box3().setFromObject(cityModel);
     // const center = box.getCenter(new THREE.Vector3());
     // console.log('City Center:', center);
 });
+
+
+const garageLight = new THREE.RectAreaLight(0xff00ff, 5, 2, 50);
+scene.add(garageLight);
+garageLight.position.set(-10, 10, -160);
+garageLight.rotation.x = -Math.PI / 2;
+
+// const garageLightHelper = new RectAreaLightHelper(garageLight);
+// scene.add(garageLightHelper);
+
+
 
 // For the sky, may need replacing with a SkyBox.
 const sphereGeo = new THREE.SphereGeometry(500, 60, 40);
@@ -203,6 +225,15 @@ entityManager.add(myCar);
 // CAMERA BASED FUNCTIONS
 // ------------------------------------------------------------------------------
 
+// Acts as an enum.
+const cameraStates = Object.freeze({
+    HOME: 0,
+    EDUCATION: 1,
+    EXPERIENCE: 2,
+    PROJECTS: 3,
+    LINKS: 4
+});
+
 const time = new YUKA.Time();
 
 const cityCenter = new THREE.Vector3(119.17, 102.34, 94.36); // Center of the city
@@ -210,7 +241,8 @@ const orbitRadius = 102.34; // Distance from the center
 const orbitHeight = 150; // Height above the center
 const orbit = {angle: 0}
 let orbitween = null;
-let carFollow = true; // So we stop following the car.
+let carFollow = cameraStates.HOME; // So we stop following the car.
+
 
 // Function for the HOME tab animation. - Following the car.
 function moveCamera() {
@@ -247,7 +279,7 @@ function orbitCamera() {
 
 // Code for transitioning to the orbit camera.    
 function toEducationAnimation() {
-    carFollow = false;
+    carFollow = cameraStates.EDUCATION;
     orbit.angle = 0;
 
     // Checks if there is an existing animation, and kills it before restarting this one.
@@ -276,9 +308,6 @@ function toEducationAnimation() {
             z: cityCenter.z + orbitRadius * Math.sin(0),
             duration: 4,
             ease: "power2.inOut",
-            onUpdate: function() {
-                // camera.lookAt(cityCenter);
-            },
             onComplete: function() {
                 // Start the orbital motion after reaching the initial position
                 orbitCamera();
@@ -304,6 +333,71 @@ document.getElementById('educationNav').addEventListener('click', function(e) {
 //     carFollow = true;
 // });
 
+function toExperienceAnimation() {
+    carFollow = cameraStates.EXPERIENCE;
+
+    if (orbitween) {
+        orbitween.kill();
+    }
+
+    const currentLookAt = new THREE.Vector3();
+    camera.getWorldDirection(currentLookAt);
+
+    gsap.timeline()
+        .to(currentLookAt, {
+            x: -100,
+            y: 0,
+            z: -470,
+            duration: 4,
+            onUpdate: function() {
+                camera.lookAt(currentLookAt);
+            }
+        }, 0)
+
+        .to(camera.position, {
+            x: -110,
+            y: 5,
+            z: -75,
+            duration: 4,
+            ease: "power2.inOut"
+        }, 0);
+}
+
+document.getElementById('expNav').addEventListener('click', function(e) {
+    e.preventDefault();
+    console.log("Switching to EXPERIENCE tab animation.");
+    toExperienceAnimation();
+});
+
+// window.addEventListener('mousedown', function() {
+//     console.log("Mouse clicked!");
+//     carFollow = cameraStates.EXPERIENCE;
+//     gsap.to(camera.position, {
+//         x: -107,
+//         y: 5,
+//         z: -70,
+//         duration: 3
+//     });
+//     camera.lookAt(-100, 0, -470);
+// })
+
+
+
+// // FOR DEBUGGING.
+// window.addEventListener('keydown', (event) => {
+//     if (event.key.toLowerCase() == 'd') {
+//         debugMode = !debugMode;
+//         console.log("Debug mode ${debugMode ? 'enabled': 'disabled'}");
+
+//         orbitControls.enabled = debugMode;
+
+//         if (debugMode) {
+//             if (orbitween) orbitween.kill();
+//             carFollow = null;
+//         }
+//     }
+// })
+
 
 // ------------------------------------------------------------------------------
 // REGULAR FUNCTIONS.
@@ -315,9 +409,17 @@ function animate() {
     const delta = time.update().getDelta();
     entityManager.update(delta);
 
-    if (carFollow) {
-        moveCamera();
-    };
+    if (!debugMode) {
+        if (carFollow == cameraStates.HOME) {
+            moveCamera();
+        };
+    } else {
+        orbitControls.update();
+        // console.log(camera.position, camera.rotation);
+    }
+
+    // console.log(orbitControls.enabled ? "OrbitControls active" : "OrbitControls disabled");
+
 
     // console.log(camera.position);
     composer.render();
@@ -325,6 +427,26 @@ function animate() {
     // mapControls.update();
 }
 animate()
+
+// Initialize a new Lenis instance for smooth scrolling
+const lenis = new Lenis();
+
+// Listen for the 'scroll' event and log the event data to the console
+lenis.on('scroll', (e) => {
+  console.log(e);
+});
+
+// Synchronize Lenis scrolling with GSAP's ScrollTrigger plugin
+// lenis.on('scroll', ScrollTrigger.update);
+
+// Add Lenis's requestAnimationFrame (raf) method to GSAP's ticker
+// This ensures Lenis's smooth scroll animation updates on each GSAP tick
+gsap.ticker.add((time) => {
+  lenis.raf(time * 1000); // Convert time from seconds to milliseconds
+});
+
+// Disable lag smoothing in GSAP to prevent any delay in scroll animations
+gsap.ticker.lagSmoothing(0);
 
 // ------------------------------------------------------------------------------
 
