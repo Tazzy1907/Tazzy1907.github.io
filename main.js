@@ -240,8 +240,17 @@ const cityCenter = new THREE.Vector3(119.17, 102.34, 94.36); // Center of the ci
 const orbitRadius = 102.34; // Distance from the center
 const orbitHeight = 150; // Height above the center
 const orbit = {angle: 0}
-let orbitween = null;
+let activeAnimation = null;
 let carFollow = cameraStates.HOME; // So we stop following the car.
+
+// Function to kill any active animations.
+function stopActiveAnimation() {
+    if (activeAnimation) {
+        activeAnimation.kill();
+        activeAnimation = null;
+    }
+}
+
 
 
 // Function for the HOME tab animation. - Following the car.
@@ -261,7 +270,7 @@ function moveCamera() {
 // Function for the EDUCATION tab animation - Orbit the city.
 function orbitCamera() {
     // Assign so we can track whether the animation is running.
-    orbitween = gsap.to(orbit, {
+    activeAnimation = gsap.to(orbit, {
         angle: Math.PI * 2,
         duration: 30,
         repeat: -1,
@@ -282,16 +291,14 @@ function toEducationAnimation() {
     carFollow = cameraStates.EDUCATION;
     orbit.angle = 0;
 
-    // Checks if there is an existing animation, and kills it before restarting this one.
-    if (orbitween) {
-        orbitween.kill();
-    }
+    // Kills any existing animation it before restarting this one.
+    stopActiveAnimation();
 
     // Get where the camera is currently looking.
     const currentLookAt = new THREE.Vector3();
     camera.getWorldDirection(currentLookAt);
 
-    gsap.timeline()
+    activeAnimation = gsap.timeline()
         .to(currentLookAt, {
             x: cityCenter.x,
             y: cityCenter.y,
@@ -336,14 +343,12 @@ document.getElementById('educationNav').addEventListener('click', function(e) {
 function toExperienceAnimation() {
     carFollow = cameraStates.EXPERIENCE;
 
-    if (orbitween) {
-        orbitween.kill();
-    }
+    stopActiveAnimation();
 
     const currentLookAt = new THREE.Vector3();
     camera.getWorldDirection(currentLookAt);
 
-    gsap.timeline()
+    activeAnimation = gsap.timeline()
         .to(currentLookAt, {
             x: -100,
             y: 0,
@@ -360,7 +365,10 @@ function toExperienceAnimation() {
             z: -75,
             duration: 4,
             ease: "power2.inOut"
-        }, 0);
+        }, 0)
+        
+        .to()
+        ;
 }
 
 document.getElementById('expNav').addEventListener('click', function(e) {
